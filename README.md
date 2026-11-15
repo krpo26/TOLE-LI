@@ -19,3 +19,6 @@ Pestaña 🎧: abre EPUB, PDF, Word, Excel, CSV o texto y lo lee en voz alta, co
 ## Escritura y vista
 - Diccionario predictivo: sugiere palabras sobre el teclado y aprende las tuyas (solo se guardan en el teléfono). Se activa o desactiva en Ajustes.
 - Cabecera: A− / A+ cambian el tamaño de la pantalla (toca el % para volver a 100%) y el botón ☀️/🌙 alterna tema claro y oscuro.
+
+## Formatos
+Abre y edita: Excel (xlsx, xlsm, xlsb, xls), OpenDocument (ods), CSV/TSV, Word (docx), HTML, texto y código. Convierte a texto editable: EPUB, PowerPoint (pptx), OpenDocument (odt, odp), RTF. PDF: visor de páginas, extraer texto para editar, escuchar y exportar cualquier documento a PDF. Imágenes: ver y convertir a PDF. Los .doc/.ppt antiguos hay que pasarlos antes a .docx/.pptx.

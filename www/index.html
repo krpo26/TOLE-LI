@@ -36,9 +36,9 @@ header{flex-wrap:wrap}#hc button{border:1px solid var(--bd);background:var(--sf)
 <header><img id="lg" alt=""><span>TOLE2 Li</span><span id="st"></span><span id="hc"><button onclick="zoom(-.1)">A−</button><button id="zp" onclick="zoom(0)">100%</button><button onclick="zoom(.1)">A+</button><button id="tgl" onclick="alt()">🌙</button></span></header>
 <main>
 <section id="p1">
-<label class="btn">Abrir archivo<input id="f" type="file" hidden accept=".xlsx,.xls,.csv,.docx,.txt,.md,.json,.html"></label>
+<label class="btn">Abrir archivo<input id="f" type="file" hidden></label>
 <button class="btn o" onclick="nuevo('xlsx')">Nuevo Excel</button><button class="btn o" onclick="nuevo('docx')">Nuevo Word</button>
-<div id="msg">Excel, CSV, Word (.docx) y texto. Funciona sin internet.</div><div id="ed"></div></section>
+<div id="msg">Abre PDF, Word, Excel, PowerPoint, OpenDocument, EPUB, RTF, imágenes, texto y más. Funciona sin internet.</div><div id="ed"></div></section>
 <section id="p2" hidden><label class="btn">📷 Escanear<input id="c" type="file" hidden accept="image/*" capture="environment" multiple></label>
 <button class="btn o" onclick="pdf()">Guardar PDF</button><button class="btn o" onclick="imgs=[];th.innerHTML=''">Limpiar</button><div id="th"></div></section>
 <section id="p3" hidden><b>En este teléfono</b><div id="loc"></div><br><b>En la nube</b><div id="nube">Inicia sesión en Ajustes.</div></section>
@@ -63,7 +63,7 @@ header{flex-wrap:wrap}#hc button{border:1px solid var(--bd);background:var(--sf)
 <b>Nube (Firebase)</b><div id="cu">Sin sesión</div>
 <button class="btn o" onclick="login()">Iniciar sesión / Crear cuenta</button><button class="btn o" onclick="fb&&fb.auth().signOut()">Salir</button></section>
 <section id="p5" hidden>
-<label class="btn">Abrir libro / archivo<input type="file" hidden accept=".epub,.pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.md,.html,.json" onchange="if(this.files[0])listen(this.files[0]);this.value=''"></label>
+<label class="btn">Abrir libro / archivo<input type="file" hidden onchange="if(this.files[0])listen(this.files[0]);this.value=''"></label>
 <button class="btn o" onclick="cargarLibro(cur.name||'Documento',actual())">Leer documento abierto</button>
 <div id="bt" style="font-weight:700">Elige un libro o documento</div><div id="msg2" style="font-size:13px;opacity:.75"></div>
 <div id="rd"></div><input type="range" id="pg" min="0" max="0" value="0" onchange="ci=+this.value;pgo(0)">
@@ -104,10 +104,6 @@ function grab(){if(cur.type!='x')return;const ws=cur.wb.Sheets[cur.sheet],rg=XLS
 function showDoc(h){cur.type='d';ed.innerHTML='<div class="tb"><button onclick="document.execCommand(\'bold\')"><b>B</b></button><button onclick="document.execCommand(\'italic\')"><i>I</i></button><button onclick="document.execCommand(\'underline\')"><u>U</u></button><button onclick="document.execCommand(\'insertUnorderedList\')">• Lista</button>'+fdoc()+GB+'</div><div id="doc" contenteditable '+SP+'>'+h+'</div>'}
 function showTxt(t){cur.type='t';ed.innerHTML=GB+'<textarea id="tx" '+SP+'></textarea>';tx.value=t}
 function nuevo(t){cur={name:t=='xlsx'?'nuevo.xlsx':'nuevo.docx',nuevo:1};tab(1);if(t=='xlsx'){cur.type='x';cur.wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(cur.wb,XLSX.utils.aoa_to_sheet([[]]),'Hoja1');showSheet('Hoja1')}else showDoc('<p>Escribe aquí…</p>')}
-async function abrir(fl){const ext=fl.name.split('.').pop().toLowerCase();cur={name:fl.name,ext};msg.textContent='Abierto: '+fl.name;
-try{if(['xlsx','xls','csv'].includes(ext)){cur.type='x';cur.wb=XLSX.read(await fl.arrayBuffer(),{type:'array'});showSheet(cur.wb.SheetNames[0])}
-else if(ext=='docx'){showDoc((await mammoth.convertToHtml({arrayBuffer:await fl.arrayBuffer()})).value)}
-else if(ext=='doc'){showDoc(await fl.text())}else showTxt(await fl.text())}catch(x){msg.textContent='No se pudo abrir: '+x.message}}
 f.onchange=e=>{if(e.target.files[0])abrir(e.target.files[0]);f.value=''};
 /* escáner */
 c.onchange=e=>{[...e.target.files].forEach(fl=>{const r=new FileReader();r.onload=()=>{imgs.push(r.result);const i=new Image();i.src=r.result;i.className='th';th.appendChild(i)};r.readAsDataURL(fl)});c.value=''};
@@ -127,8 +123,12 @@ const op=P.parseFromString(await rd(rf),'text/xml'),mf={};op.querySelectorAll('m
 let t='';for(const r of op.querySelectorAll('spine > itemref')){const h=mf[r.getAttribute('idref')];if(!h)continue;const d=P.parseFromString(await rd(dir+decodeURIComponent(h.split('#')[0])),'text/html');d.querySelectorAll('script,style').forEach(e=>e.remove());t+=(d.body?d.body.textContent:'')+'\n\n'}return t}
 if(ext=='pdf'){const d=await pdfjsLib.getDocument({data:new Uint8Array(await buf())}).promise;let t='';for(let i=1;i<=d.numPages;i++){const c=await (await d.getPage(i)).getTextContent();t+=c.items.map(x=>x.str).join(' ')+'\n\n'}return t}
 if(ext=='docx')return (await mammoth.extractRawText({arrayBuffer:await buf()})).value;
-if(['xlsx','xls','csv'].includes(ext)){const w=XLSX.read(await buf(),{type:'array'});return w.SheetNames.map(n=>XLSX.utils.sheet_to_csv(w.Sheets[n]).replace(/,/g,', ')).join('\n\n')}
-const t=await fl.text();return ['html','doc'].includes(ext)?(new DOMParser().parseFromString(t,'text/html').body.textContent):t}
+if(SH.includes(ext)){const w=XLSX.read(await buf(),{type:'array'});return w.SheetNames.map(n=>XLSX.utils.sheet_to_csv(w.Sheets[n]).replace(/,/g,', ')).join('\n\n')}
+if(IMG.includes(ext))throw new Error('Una imagen no tiene texto (haría falta OCR)');
+if(['pptx','potx','ppsx'].includes(ext)){const z=await JSZip.loadAsync(await buf()),ns=Object.keys(z.files).filter(n=>/^ppt\/slides\/slide\d+\.xml$/.test(n)).sort((a,b)=>+a.match(/\d+/)-+b.match(/\d+/));let t='',k=1;for(const n of ns){const x=await z.file(n).async('string');t+='Diapositiva '+k+++'\n'+x.split('</a:p>').map(q=>[...q.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map(m=>m[1]).join('')).filter(Boolean).join('\n')+'\n\n'}return dec(t)}
+if(['odt','ott','odp','odm'].includes(ext)){const z=await JSZip.loadAsync(await buf());return dec((await z.file('content.xml').async('string')).replace(/<\/text:(p|h)>/g,'\n').replace(/<[^>]+>/g,''))}
+if(ext=='rtf')return rtf(await fl.text());
+const t=await fl.text();return ['html','htm','doc'].includes(ext)?(new DOMParser().parseFromString(t,'text/html').body.textContent):t}
 async function listen(fl){msg2.textContent='Procesando '+fl.name+'…';try{const t=await textoDe(fl);if(!t.trim())return msg2.textContent='No se encontró texto (un PDF escaneado como imagen no se puede leer).';cargarLibro(fl.name,t)}catch(e){msg2.textContent='No se pudo leer: '+e.message}}
 function cargarLibro(name,text){if(!text||!text.trim())return msg2.textContent='No hay texto para leer.';pstop();book=name;ch=trozos(text);ci=+((JSON.parse(localStorage.t2p||'{}'))[name]||0);if(ci>=ch.length)ci=0;bt.textContent=name+' · '+ch.length+' fragmentos';msg2.textContent=ci?'Continuando donde lo dejaste':'';pint()}
 function pint(){rd.textContent=ch[ci]||'';pg.max=Math.max(ch.length-1,0);pg.value=ci;try{const p=JSON.parse(localStorage.t2p||'{}');p[book]=ci;localStorage.t2p=JSON.stringify(p)}catch(e){}}
@@ -142,13 +142,14 @@ function pgo(d){const w=play;pstop();ci=Math.max(0,Math.min(ch.length-1,ci+d));p
 function dormir(m){clearTimeout(tm);if(m)tm=setTimeout(pstop,m*60000)}
 /* guardar: sobrescribe en Archivos; enviar = compartir/descargar */
 ['logo','fondo','portada'].forEach(k=>delete cfg[k]);
-const GB='<button class="btn" onclick="guardar()">Guardar</button><button class="btn o" onclick="guardar(1)">Guardar como</button><button class="btn o" onclick="compartir()">Enviar</button>';
+const GB='<button class="btn" onclick="guardar()">Guardar</button><button class="btn o" onclick="guardar(1)">Guardar como</button><button class="btn o" onclick="compartir()">Enviar</button><button class="btn o" onclick="aPDF()">→ PDF</button>';
 async function enviar(name,blob){try{const C=window.Capacitor;if(C&&C.isNativePlatform&&C.isNativePlatform()){const b64=await new Promise(r=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.readAsDataURL(blob)});const w=await C.Plugins.Filesystem.writeFile({path:name,data:b64,directory:'CACHE'});await C.Plugins.Share.share({title:name,url:w.uri})}else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()}}catch(e){msg.textContent='Error al enviar: '+e.message}}
 async function save(name,blob){await idb('put',name,new File([blob],name));await enviar(name,blob);msg.textContent='Guardado: '+name}
 function salida(){const b=cur.name.replace(/\.[^.]+$/,'');
-if(cur.type=='x'){grab();const csv=cur.ext=='csv';return{name:b+(csv?'.csv':'.xlsx'),blob:new Blob([csv?XLSX.utils.sheet_to_csv(cur.wb.Sheets[cur.sheet]):XLSX.write(cur.wb,{bookType:'xlsx',type:'array'})])}}
-if(cur.type=='d')return{name:b+'.doc',blob:new Blob(['<html><head><meta charset="utf-8"></head><body>'+doc.innerHTML+'</body></html>'],{type:'application/msword'})};
-if(cur.type=='t')return{name:cur.name,blob:new Blob([tx.value],{type:'text/plain'})};return null}
+if(cur.type=='x'){grab();const e=cur.ext,csv=e=='csv'||e=='tsv',ods=e=='ods';return{name:b+(csv?'.'+e:ods?'.ods':'.xlsx'),blob:new Blob([csv?XLSX.utils.sheet_to_csv(cur.wb.Sheets[cur.sheet],{FS:e=='tsv'?'\t':','}):XLSX.write(cur.wb,{bookType:ods?'ods':'xlsx',type:'array'})])}}
+if(cur.type=='d')return{name:b+(['html','htm'].includes(cur.ext)?'.html':'.doc'),blob:new Blob(['<html><head><meta charset="utf-8"></head><body>'+doc.innerHTML+'</body></html>'],{type:'application/msword'})};
+if(cur.type=='t')return{name:cur.name,blob:new Blob([tx.value],{type:'text/plain'})};
+if(cur.type=='p')return{name:cur.name,blob:cur.pdf};if(cur.type=='i')return{name:cur.name,blob:cur.file};return null}
 async function guardar(como){const s=salida();if(!s)return;let n=s.name;const ex=await idb('keys');
 if(como||cur.nuevo){const ext=(n.match(/\.[^.]+$/)||[''])[0];n=prompt('Nombre del archivo',n);if(!n)return;if(!/\.[a-z0-9]+$/i.test(n))n+=ext;if(ex.includes(n)&&(cur.nuevo||n!==cur.name)&&!confirm('Ya existe «'+n+'». ¿Sobrescribirlo?'))return}
 await idb('put',n,new File([s.blob],n));cur.name=n;cur.nuevo=0;msg.textContent=(ex.includes(n)?'Sobrescrito: ':'Guardado: ')+n+' (en Archivos)'}
@@ -198,5 +199,34 @@ document.addEventListener('focusout',()=>setTimeout(()=>{if(!ctx())pb.hidden=tru
 /* tamaño de pantalla y tema rápido */
 function zoom(d,k){cfg.z=Math.min(2,Math.max(.7,Math.round(((cfg.z||1)+d)*10)/10));if(d===0&&!k)cfg.z=1;document.querySelector('main').style.zoom=cfg.z;zp.textContent=Math.round(cfg.z*100)+'%';if(!k)sv()}
 function alt(){const dk=cfg.mode=='d'||(cfg.mode!='l'&&matchMedia('(prefers-color-scheme:dark)').matches);cfg.mode=dk?'l':'d';sv();tema()}
+/* formatos: PDF, Office, OpenDocument, EPUB, RTF, imágenes y texto */
+const SH=['xlsx','xlsm','xlsb','xls','ods','fods','csv','tsv','dif','slk','prn'],IMG=['jpg','jpeg','png','webp','gif','bmp','svg'];
+const dec=t=>t.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+const rtf=t=>t.replace(/\\par[d]?/g,'\n').replace(/\\'([0-9a-f]{2})/gi,(m,h)=>String.fromCharCode(parseInt(h,16))).replace(/\\u(-?\d+)\??/g,(m,n)=>String.fromCharCode(n<0?+n+65536:+n)).replace(/\{\\\*[^{}]*\}/g,'').replace(/\\[a-z]+-?\d* ?/gi,'').replace(/[{}]/g,'').replace(/\n{3,}/g,'\n\n').trim();
+async function abrir(fl){const ext=fl.name.split('.').pop().toLowerCase(),b=fl.name.replace(/\.[^.]+$/,'');cur={name:fl.name,ext};msg.textContent='Abierto: '+fl.name;
+try{const h=new Uint8Array(await fl.slice(0,8).arrayBuffer());
+if(SH.includes(ext)){cur.type='x';cur.wb=XLSX.read(await fl.arrayBuffer(),{type:'array'});showSheet(cur.wb.SheetNames[0])}
+else if(ext=='pdf')await showPdf(fl);
+else if(IMG.includes(ext)||(fl.type||'').startsWith('image/'))showImg(fl);
+else if(['docx','docm','dotx','dotm'].includes(ext))showDoc((await mammoth.convertToHtml({arrayBuffer:await fl.arrayBuffer()})).value);
+else if(h[0]==0xD0&&h[1]==0xCF)msg.textContent='Formato antiguo (.doc / .ppt) no compatible: guárdalo como .docx o .pptx y ábrelo de nuevo.';
+else if(['html','htm','doc'].includes(ext))showDoc(new DOMParser().parseFromString(await fl.text(),'text/html').body.innerHTML);
+else if(['epub','pptx','potx','ppsx','odt','ott','odp','odm','rtf'].includes(ext)){const t=await textoDe(fl);showTxt(t);cur.name=b+'.txt';cur.nuevo=1;cur.ext='txt';msg.textContent='Convertido a texto editable: '+fl.name}
+else{const t=await fl.text();if(/[\u0000-\u0008\u000e-\u001f]/.test(t.slice(0,2000)))msg.textContent='Formato no compatible: '+fl.name;else showTxt(t)}}
+catch(x){msg.textContent='No se pudo abrir: '+x.message}}
+async function showPdf(fl){cur.type='p';cur.pdf=fl;cur.pd=await pdfjsLib.getDocument({data:new Uint8Array(await fl.arrayBuffer())}).promise;
+ed.innerHTML='<div class="tb"><button class="btn" onclick="guardar()">Guardar</button><button class="btn o" onclick="compartir()">Enviar</button><button class="btn o" onclick="pdfTexto()">Editar texto</button><button class="btn o" onclick="listen(cur.pdf);tab(5)">🎧 Escuchar</button></div><div id="pv" class="sc" style="max-height:72vh"></div>';
+const pv=$('pv'),W=pv.clientWidth||360;
+const io=new IntersectionObserver(es=>es.forEach(async e=>{const c=e.target;if(e.isIntersecting&&!c.dataset.r){c.dataset.r=1;const pg=await cur.pd.getPage(+c.dataset.n),v0=pg.getViewport({scale:1}),v=pg.getViewport({scale:Math.min(3,2*W/v0.width)});c.style.aspectRatio=v.width+'/'+v.height;c.width=v.width;c.height=v.height;await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise}else if(!e.isIntersecting&&c.dataset.r){delete c.dataset.r;c.width=c.height=0}}),{root:pv,rootMargin:'400px'});
+for(let n=1;n<=cur.pd.numPages;n++){const c=document.createElement('canvas');c.dataset.n=n;c.style.cssText='width:100%;display:block;margin:6px 0;background:#fff;aspect-ratio:0.707';pv.appendChild(c);io.observe(c)}
+msg.textContent=cur.name+' · '+cur.pd.numPages+' páginas'}
+async function pdfTexto(){msg.textContent='Extrayendo texto…';const t=await textoDe(cur.pdf);if(!t.trim())return msg.textContent='Este PDF no tiene texto (es una imagen escaneada).';const b=cur.name.replace(/\.[^.]+$/,'');
+showDoc(t.split(/\n{2,}/).map(q=>'<p>'+q.replace(/</g,'&lt;')+'</p>').join(''));cur.name=b+'.doc';cur.ext='pdf';cur.nuevo=1;msg.textContent='Texto extraído (se pierde el diseño del PDF). Al guardar eliges el nombre.'}
+function showImg(fl){cur.type='i';cur.file=fl;ed.innerHTML='<div class="tb"><button class="btn" onclick="guardar()">Guardar</button><button class="btn o" onclick="compartir()">Enviar</button><button class="btn o" onclick="imgAPDF()">Al escáner / PDF</button></div><img style="max-width:100%;border-radius:8px" src="'+URL.createObjectURL(fl)+'">'}
+function jpg(f){return new Promise((ok,no)=>{const i=new Image();i.onload=()=>{const w=i.width||1000,h=i.height||1000,k=Math.min(1,2000/Math.max(w,h)),c=document.createElement('canvas');c.width=w*k;c.height=h*k;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(i,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.9))};i.onerror=()=>no(new Error('No se pudo leer la imagen'));i.src=URL.createObjectURL(f)})}
+async function imgAPDF(){try{const u=await jpg(cur.file);imgs.push(u);const i=new Image();i.src=u;i.className='th';th.appendChild(i);tab(2)}catch(e){msg.textContent=e.message}}
+async function aPDF(){let t='';if(cur.type=='d')t=doc.innerText;else if(cur.type=='t')t=tx.value;else if(cur.type=='x'){grab();t=XLSX.utils.sheet_to_csv(cur.wb.Sheets[cur.sheet]).replace(/,/g,'    ')}else return;
+const{jsPDF}=window.jspdf,d=new jsPDF({unit:'pt',format:'a4'}),W=d.internal.pageSize.getWidth()-80,H=d.internal.pageSize.getHeight()-50;d.setFontSize(11);let y=50;
+for(const l of d.splitTextToSize(t,W)){if(y>H){d.addPage();y=50}d.text(l,40,y);y+=15}enviar(cur.name.replace(/\.[^.]+$/,'')+'.pdf',d.output('blob'))}
 const net=()=>st.textContent=navigator.onLine?'● en línea':'○ sin internet';addEventListener('online',net);addEventListener('offline',net);net();arranque();setTimeout(()=>sp.remove(),2500);
 </script></body></html>
