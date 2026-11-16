@@ -22,3 +22,6 @@ Pestaña 🎧: abre EPUB, PDF, Word, Excel, CSV o texto y lo lee en voz alta, co
 
 ## Formatos
 Abre y edita: Excel (xlsx, xlsm, xlsb, xls), OpenDocument (ods), CSV/TSV, Word (docx), HTML, texto y código. Convierte a texto editable: EPUB, PowerPoint (pptx), OpenDocument (odt, odp), RTF. PDF: visor de páginas, extraer texto para editar, escuchar y exportar cualquier documento a PDF. Imágenes: ver y convertir a PDF. Los .doc/.ppt antiguos hay que pasarlos antes a .docx/.pptx.
+
+## Voces
+Pestaña 🎧 > Voces: elige la voz del narrador entre las instaladas en el teléfono (♀/♂ estimado por el nombre), un estilo de personaje genérico (niño, anciano, villano, robot…) y opcionalmente otra voz para los diálogos (líneas con — o comillas). Para más voces: Ajustes de Android > Salida de texto a voz.
